@@ -29,7 +29,7 @@ This repository is being built. Technical how-to guides will appear in the index
 | Monitoring and Splunk | Log collection, dashboard configuration, and health checks | Planned |
 | Persistent cache and replication | Cache behavior, replication prerequisites, and verification | Planned |
 | Troubleshooting | Common symptoms, diagnostic steps, and resolution checks | Planned |
-| REST API and automation | [Querying RadiantOne ADAP with PowerShell](guides/rest-api/powershell-adap-queries.md) — authenticate, validate a bind, and perform read-only namespace searches | Published |
+| REST API and automation | [Querying RadiantOne ADAP with PowerShell](guides/powershell-adap-queries.md) — authenticate, validate a bind, and perform read-only namespace searches | Published |
 
 ## What to expect from each guide
 
