@@ -15,7 +15,7 @@ Senior Customer Enablement Consultant – Federal | Radiant Logic
 2. Check the guide's tested version, prerequisites, and environment assumptions.
 3. Follow the steps and complete the validation checks before applying the procedure more broadly.
 
-This repository is being built. Technical how-to guides will appear in the index as they are published.
+**2 tutorials currently available.** Additional technical how-to guides will be added as they are published.
 
 ## Guide index
 
@@ -27,7 +27,7 @@ This repository is being built. Technical how-to guides will appear in the index
 | Virtual views and computed attributes | View configuration, derived attributes, and validation | Planned |
 | Groups and memberships | Nested groups, tokenGroups, and membership troubleshooting | Planned |
 | Monitoring and Splunk | Log collection, dashboard configuration, and health checks | Planned |
-| Persistent cache and replication | Cache behavior, replication prerequisites, and verification | Planned |
+| Persistent cache and replication | [Persistent Cache with HDAP — Hands-On Lab](guides/radiantone-persistent-cache-hdap-lab.md) — build an HDAP source and Raw Layer view, initialize persistent cache, test synchronization, and troubleshoot logs | Published |
 | Troubleshooting | Common symptoms, diagnostic steps, and resolution checks | Planned |
 | REST API and automation | [Querying RadiantOne ADAP with PowerShell](https://github.com/castillorm/radiantone-how-to/blob/main/guides/powershell-adap-queries.md) — authenticate, validate a bind, and perform read-only namespace searches | Published |
 
