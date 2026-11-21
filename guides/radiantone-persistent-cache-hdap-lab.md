@@ -299,13 +299,11 @@ Do not interpret a delayed result as proof of a persistent cache: source connect
 1. In Main Control Panel open **Directory Namespace**.
 2. Find and expand the **Cache** node, if available in your console.
 3. Inspect existing cached branches. Confirm no cache already owns `ou=raw,o=pcache-lab` or an overlapping suffix.
-4. Select the Raw branch or the cache-creation workflow provided for that branch.
-5. Choose **persistent cache**, not a transient memory cache.
-6. Associate the cache with the already validated Raw virtual backend; verify the displayed source backend and base DN.
-7. Review the cache root DN that the wizard proposes. Write the *actual* value into `<ACTUAL_CACHE_ROOT_DN>` in your worksheet.
-8. Save the configuration and reopen it to verify the selected branch is marked for persistent caching.
+4. Since no cache for the Raw stage exists, we will create one by clicking the "Browse" button and choosing the ou=raw, o=pcache-lab" DN. Click "OK".
+5. Click the "Create Persistent Cache" button. Click "OK".
+6. On the left hand side of the screen, under the Cache branch, you should the ou=raw,o=pcache-lab DN.
 
-**Stop condition:** If you cannot identify the exact cache-creation action or its source view, stop here and inspect the installed 7.4 documentation or share a sanitized screenshot. Do not create a new HDAP store at the same DN as the Raw proxy branch as a workaround.
+**Stop condition:** If you cannot identify the exact cache-creation action or its source view, stop here and inspect the installed 7.4 documentation . Do not create a new HDAP store at the same DN as the Raw proxy branch as a workaround.
 
 ### 3C. Inspect and select the refresh mechanism
 
