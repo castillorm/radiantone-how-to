@@ -1,7 +1,7 @@
 # RadiantOne 7.4 How-To: Persistent Cache with a Synthetic HDAP Source
 
 **Category:** Persistent cache and replication  
-**Estimated duration:** 90–120 minutes  
+**Estimated duration:** 120–150 minutes  
 **Audience:** Identity engineers, administrators, and support engineers  
 **Platform:** RadiantOne 7.4, nonproduction; PowerShell examples for Windows  
 **Status:** Guided exercise; confirm version-specific console labels and cache refresh options in your installed patch
@@ -11,7 +11,7 @@
 ## What you will learn
 
 1. Create an isolated HDAP-backed LDAP source and import three test identities.
-2. Build a **virtual Raw Layer** using the **Directory Tree Wizard**.
+2. Build a **virtual Raw Layer** using **Directory Namespace** and **Context Builder (Schema Manager and View Designer)**.
 3. Verify source-to-Raw DN mapping and prove that the uncached view works.
 4. Enable and initialize persistent cache on the appropriate Raw branch.
 5. Determine which refresh mechanism actually applies to your configuration.
@@ -29,7 +29,7 @@ Synthetic HDAP source
       uid=bob.jones
       uid=carol.lee
           |
-          | LDAP backend connection / DN mapping
+          | Context Builder ORX extraction + DVX mapping
           v
 Virtual Raw namespace (initially uncached)
   ou=raw,o=pcache-lab
@@ -153,105 +153,134 @@ Attributes: uid,cn,sn,givenName,mail,employeeNumber
 
 ---
 
-## Lab 2 — Create the Raw Layer with the Directory Tree Wizard (20–25 minutes)
+## Lab 2 — Create the Raw Layer with Directory Namespace and Context Builder (40–50 minutes)
 
-> **Chosen approach:** The Directory Tree Wizard mounts an LDAP backend into a virtual namespace. It avoids the manual ORX/DVX Context Builder workflow. Do not mix the two procedures unless you deliberately want to compare them.
+> **Required approach:** Do **not** use Directory Tree Wizard. In this lab, **Directory Namespace** defines the published tree and label, while **Context Builder** defines the source extraction (`.orx`) and virtual view (`.dvx`). Exact menu captions and whether an editor is launched from a tab or context menu may vary by RadiantOne 7.4 patch. Where this is the case, the procedure explicitly identifies the checkpoint rather than inventing a confirmed button.
 
-### 2A. Create and test the LDAP data source
+### 2A. Create the destination naming context
 
-1. In **Main Control Panel**, click **Settings**.
-2. Expand **Server Backend** in the navigation tree.
-3. Click **LDAP Data Sources**.
-4. Click **Add**.
-5. Set **Data Source Name** to `LAB_HDAP_SOURCE`.
-6. Enter the LDAP server **Host** (for example `localhost` only if the source listener is local).
-7. Enter the actual LDAP **Port**. `2389` is only a placeholder.
-8. Choose the connection security supported by your lab listener. Do not disable TLS verification merely to make a connection test pass.
-9. Enter the dedicated lab **Bind DN** and password in the console; **do not** record either value in GitHub.
-10. Where the data source dialog provides a source base or search base, use `ou=people,o=lab-source`. If the data source dialog has no such field, you will supply this DN in the backend mount mapping.
-11. Click **Test Connection** (or the equivalent test control in your patch).
-12. Confirm a successful bind, then click **Save** / **OK**.
+1. Sign in to **Main Control Panel** with a lab administrator account.
+2. Click **Directory Namespace**.
+3. Expand **Root Naming Contexts** in the navigation tree.
+4. Inspect the existing roots for `o=pcache-lab`. If it exists and is not a disposable lab root, **stop** and choose another unused DN.
+5. Select **Root Naming Contexts** and use the **Add / New Naming Context** action available in your build (often available through a right-click context menu).
+6. Enter `o=pcache-lab` as the naming context. Choose the virtual namespace/label configuration rather than creating another source HDAP store.
+7. Click **OK / Save**, then confirm that `o=pcache-lab` appears in the tree.
 
-**Expected:** `LAB_HDAP_SOURCE` appears in the LDAP Data Sources list. A successful bind alone does not prove that the account can search the source subtree; use the source search from Lab 1 as an additional check.
+**Checkpoint:** The destination root is visible, but it should not yet contain the three source users.
 
-### 2B. Launch the Directory Tree Wizard
+### 2B. Add the Raw label in Directory Namespace
 
-1. Click the **Wizards** tab in Main Control Panel.
-2. Select **Directory Tree Wizard**.
-3. On the Welcome screen click **Next**.
-4. Enter `o=pcache-lab` as the **root naming context**.
-5. Click **Next** to open the hierarchy designer.
-
-If `o=pcache-lab` already exists, do not blindly recreate it. Inspect the existing namespace and either reuse an intentionally empty lab root or choose a different lab root.
-
-### 2C. Add the Raw label
-
-1. Select the `o=pcache-lab` root in the hierarchy designer.
-2. Click **Create Level**.
-3. Set **Level Type** to `ou`.
-4. Enter `raw` as the level value.
-5. Click **OK**.
-6. Confirm the hierarchy displays:
+1. In **Directory Namespace**, expand `o=pcache-lab`.
+2. Select the root, then use the **Add Label / New Label** action for a child label. The action may appear in the toolbar or right-click menu.
+3. Set the child RDN to `ou=raw` (or set attribute `ou` and value `raw` if the dialog separates these fields).
+4. Confirm the full label DN is `ou=raw,o=pcache-lab`.
+5. Click **OK / Save** and inspect the resulting tree:
 
 ```text
 o=pcache-lab
   ou=raw
 ```
 
-7. Select `ou=raw` and click **Next** to proceed to backend configuration.
+**Checkpoint:** The Raw label exists. A label is a namespace attachment point, not an ORX extraction, DVX view, or persistent cache.
 
-### 2D. Mount the LDAP backend
+### 2C. Register the source LDAP data source
 
-1. Select the `ou=raw` leaf node on the backend configuration page.
-2. Click **Mount LDAP Backend**.
-3. Open the **Data Source** dropdown and choose `LAB_HDAP_SOURCE`.
-4. Set the source/remote base to `ou=people,o=lab-source` if the wizard asks for it.
-5. Set the published/mapped base to `ou=raw,o=pcache-lab` if the wizard asks for it.
-6. Review the resulting backend mapping before continuing.
-7. Click **Next**.
-8. On the review screen, confirm the root, Raw label, source data source, and source base.
-9. Click **Create**; wait for the confirmation; click **OK** and **Finish** if shown.
+Although the source is HDAP, the lab uses an LDAP connection to the HDAP source so Context Builder can browse and extract the synthetic records.
 
-**Critical mapping:**
+1. In Main Control Panel, click **Settings**.
+2. Expand **Server Backend** and open **LDAP Data Sources** (or the equivalent data-source management screen in your patch).
+3. Click **Add** to create a new LDAP data source.
+4. Enter **Name**: `LAB_HDAP_SOURCE`.
+5. Enter the actual **Host** and **Port** of the RadiantOne LDAP listener serving `o=lab-source`. `localhost:2389` is an example only.
+6. Select the lab's supported transport and TLS settings. Do not bypass certificate verification.
+7. Enter a dedicated lab bind identity and password in the console; never place credentials in this repository.
+8. Click **Test Connection** (if provided), then **Save / OK**.
+9. Independently confirm that the bind identity can search `ou=people,o=lab-source`; a successful connection test does not prove search permissions.
+
+**Checkpoint:** The data source is listed and the source subtree returns three `inetOrgPerson` entries.
+
+### 2D. Open Context Builder and create the ORX extraction
+
+The **ORX** describes the source objects and attributes that Context Builder will use. The **DVX** defines the published virtual view. They are separate artifacts.
+
+1. Return to the **Directory Namespace** tab.
+2. Select the destination label `ou=raw,o=pcache-lab`.
+3. Open **Context Builder** for that label. Depending on the patch, this is an action in the label's properties, a toolbar action, or a right-click action. **Do not select Directory Tree Wizard.**
+4. In Context Builder, open **Schema Manager** (or the source-schema/extraction editor).
+5. Choose the action to create a **new extraction** and name it `LAB_HDAP_SOURCE.orx`.
+6. When prompted for the source type, choose the LDAP source/extraction path supported by your build.
+7. Select the existing data source `LAB_HDAP_SOURCE`.
+8. Browse to or enter **Source Base DN**: `ou=people,o=lab-source`.
+9. Select the source user object type **`inetOrgPerson`**. If the source browser groups entries by object class or category, choose the category that returns the three synthetic users; do not choose an unrelated schema object.
+10. Include at least `uid`, `cn`, `sn`, `givenName`, `mail`, and `employeeNumber`, plus the object class and RDN information required by the extraction.
+11. Use the **Preview / Test / Browse** action available in Schema Manager to inspect the extracted records.
+12. Confirm the preview contains Alice, Bob, and Carol, and that `uid` is populated.
+13. **Save** the extraction as `LAB_HDAP_SOURCE.orx`.
+
+**If `inetOrgPerson` or `employeeNumber` does not appear:** verify the source record schema and the actual search result, then refresh/re-extract source schema. Do not fabricate attributes in the ORX merely to satisfy the exercise.
+
+### 2E. Create the DVX virtual view
+
+1. In **Context Builder**, open **View Designer**.
+2. Choose **New View** (or **Create View**) and name it `LAB_HDAP_RAW.dvx`.
+3. Add the source extraction `LAB_HDAP_SOURCE.orx` to the view. In builds that display source categories as nodes, select the category containing the three users.
+4. Configure the source extraction as the view's user-entry source. This lab does **not** require joins or computed attributes.
+5. Map the source object class and attributes to the output. Preserve `uid`, `cn`, `sn`, `givenName`, `mail`, and `employeeNumber` without transformation.
+6. Configure the entry naming/RDN rule to use `uid=<source uid>`. Ensure it is **not** using `cn` or an auto-generated value.
+7. Configure the view's published base/target mapping to `ou=raw,o=pcache-lab`, with source records drawn from `ou=people,o=lab-source`.
+8. Use **Preview / Test View** if your editor offers it. Inspect the resulting entry DNs and attribute values.
+9. **Save** the DVX file.
+
+**Required DN transformation:**
 
 ```text
-Remote Base DN: ou=people,o=lab-source
-Mapped Base DN: ou=raw,o=pcache-lab
+Source: uid=alice.smith,ou=people,o=lab-source
+Target: uid=alice.smith,ou=raw,o=pcache-lab
 ```
 
-### 2E. Inspect the resulting namespace mapping
+> **Version check:** Do not assume that naming a DVX file or selecting an ORX automatically performs this DN rewrite. Verify the output DN in the view preview. The exact DN-mapping panel name varies by version and the type of view.
+
+### 2F. Attach the DVX view to the Raw label
 
 1. Return to **Directory Namespace**.
-2. Expand **Root Naming Contexts** and then `o=pcache-lab`.
-3. Select `ou=raw` or its LDAP backend child (the selected object depends on your console tree).
-4. Open the **Proxy Backend** tab, if present.
-5. Locate **Remote Base DN** and **Mapped Base DN**.
-6. Confirm the two values shown above. Correct them only if the editor allows it and you understand the resulting DN rewrite.
-7. Click **Save** and confirm **Yes** if prompted.
+2. Select `ou=raw,o=pcache-lab`.
+3. Open the label's backend/view configuration.
+4. Choose the option to attach/use a **Context Builder virtual view** rather than mounting a direct LDAP proxy backend or an HDAP store.
+5. Select `LAB_HDAP_RAW.dvx` from the available views.
+6. Confirm that the label's published base is `ou=raw,o=pcache-lab`.
+7. Click **Save / Apply** and confirm the change if prompted.
+8. Re-select the Raw label and verify that its configured backend is the expected DVX view, not merely the LDAP source data source.
 
-If the **Proxy Backend** tab is not shown, inspect the selected backend's properties; do not assume the wizard created the correct mapping without verification.
+**If you cannot find the attach-view action:** stop here and inspect the exact label properties or share a screenshot. Different 7.4 builds expose the Context Builder/view association differently; guessing could attach a backend under the wrong namespace.
 
-### 2F. Prove the Raw virtual view works *before* caching
+### 2G. Validate the Raw virtual view before caching
 
-1. Open **Directory Browser** or your LDAP client.
-2. Start a new subtree search with:
+1. Open **Directory Browser** or an external LDAP browser connected to the same RadiantOne listener.
+2. Create a **Subtree** search with:
 
 ```text
 Base DN: ou=raw,o=pcache-lab
-Scope: Subtree
 Filter: (objectClass=inetOrgPerson)
-Attributes: uid,cn,mail,employeeNumber
+Attributes: uid,cn,sn,givenName,mail,employeeNumber
 ```
 
-3. Confirm three identities appear under the Raw base.
-4. Open Alice's entry and confirm its DN is `uid=alice.smith,ou=raw,o=pcache-lab`.
-5. Compare its `mail` and `employeeNumber` values with the HDAP source.
+3. Verify that the search returns **three users**.
+4. Open Alice's result and confirm the DN is `uid=alice.smith,ou=raw,o=pcache-lab`.
+5. Compare Alice's `mail` and `employeeNumber` to the source record.
+6. In **Directory Namespace**, confirm that the Raw label is still associated with `LAB_HDAP_RAW.dvx`.
+7. Record the uncached result count and one sanitized example DN in your worksheet.
 
-**Checkpoint:** Source count = 3; Raw count = 3; DNs mapped correctly. This proves the *virtual view*, **not** the persistent cache.
+**Pass criteria:** Source count = 3; Raw view count = 3; output DNs are under the Raw label; attributes match the source. This confirms the **virtual view only**. Persistent cache has not yet been configured.
 
-### 2G. Optional: prove the Raw view is virtual
+### 2H. Optional: prove that the view is virtual
 
-Before caching, modify Alice's source `mail` attribute to `alice.virtual@example.com`, save, and immediately search Raw again. If the Raw view is reading the source, it should show the changed value. Restore `alice.smith@example.com` before the cache lab. This is a diagnostic observation, not a guaranteed latency benchmark.
+1. In the **source** HDAP branch, change Alice's `mail` from `alice.smith@example.com` to `alice.virtual@example.com`.
+2. Save the source entry.
+3. Search the Raw label again and observe whether the changed value is immediately visible.
+4. Restore the original email address before starting Lab 3.
+
+Do not interpret a delayed result as proof of a persistent cache: source connection pooling, client-side caching, or other view behavior can also affect observations.
 
 ---
 
@@ -522,7 +551,7 @@ Use these only as interpretation examples; do not search for these exact strings
 
 ## Official documentation to consult
 
-- [RadiantOne 7.4 Directory Tree Wizard](https://developer.radiantlogic.com/idm/v7.4/identity-service-wizards-guide/02-directory-tree-wizard/)
+- RadiantOne 7.4 Main Control Panel: Directory Namespace and Context Builder (consult the documentation bundled with your installed patch for exact menu labels)
 - [RadiantOne 7.4 Persistent Cache Management](https://developer.radiantlogic.com/idm/v7.4/operations-guide/04-persistent-cache-management/)
 - [RadiantOne 7.4 Logging and Troubleshooting](https://developer.radiantlogic.com/idm/v7.4/logging-and-troubleshooting-guide/03-radiantone-universal-directory/)
 - [RadiantOne 7.4 Caching Concepts](https://developer.radiantlogic.com/idm/v7.4/sys-admin-guide/cache/)
