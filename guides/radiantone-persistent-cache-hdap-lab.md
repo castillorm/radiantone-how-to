@@ -245,12 +245,10 @@ Target: uid=alice.smith,ou=raw,o=pcache-lab
 
 1. Return to **Directory Namespace**.
 2. Select `ou=raw,o=pcache-lab`.
-3. Open the label's backend/view configuration.
-4. Choose the option to attach/use a **Context Builder virtual view** rather than mounting a direct LDAP proxy backend or an HDAP store.
-5. Select `LAB_HDAP_RAW.dvx` from the available views.
-6. Confirm that the label's published base is `ou=raw,o=pcache-lab`.
-7. Click **Save / Apply** and confirm the change if prompted.
-8. Re-select the Raw label and verify that its configured backend is the expected DVX view, not merely the LDAP source data source.
+3. Open the label's backend/view configuration by clicking "Backend Mapping".
+4. Choose the option to attach/use a **Model Driven View (virtual Tree)** rather than mounting a direct LDAP proxy backend or an HDAP store.
+5. Click the "Use an existing view (.dvx) radio button option. Click the "Browse" button. Select `LAB_HDAP_RAW.dvx` from the available views.
+6. Click "OK". Click "OK".
 
 **If you cannot find the attach-view action:** stop here and inspect the exact label properties or share a screenshot. Different 7.4 builds expose the Context Builder/view association differently; guessing could attach a backend under the wrong namespace.
 
