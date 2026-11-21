@@ -206,17 +206,14 @@ The **ORX** describes the source objects and attributes that Context Builder wil
 
 1. Return to the **Directory Namespace** tab.
 2. Select the destination label `ou=raw,o=pcache-lab`.
-3. Open **Context Builder** for that label. Depending on the patch, this is an action in the label's properties, a toolbar action, or a right-click action. **Do not select Directory Tree Wizard.**
+3. Open **Context Builder**.
 4. In Context Builder, open **Schema Manager** (or the source-schema/extraction editor).
 5. Choose the action to create a **new extraction** and name it `LAB_HDAP_SOURCE.orx`.
 6. When prompted for the source type, choose the LDAP source/extraction path supported by your build.
 7. Select the existing data source `LAB_HDAP_SOURCE`.
 8. Browse to or enter **Source Base DN**: `ou=people,o=lab-source`.
 9. Select the source user object type **`inetOrgPerson`**. If the source browser groups entries by object class or category, choose the category that returns the three synthetic users; do not choose an unrelated schema object.
-10. Include at least `uid`, `cn`, `sn`, `givenName`, `mail`, and `employeeNumber`, plus the object class and RDN information required by the extraction.
-11. Use the **Preview / Test / Browse** action available in Schema Manager to inspect the extracted records.
-12. Confirm the preview contains Alice, Bob, and Carol, and that `uid` is populated.
-13. **Save** the extraction as `LAB_HDAP_SOURCE.orx`.
+10. **Save** the extraction as `LAB_HDAP_SOURCE.orx`.
 
 **If `inetOrgPerson` or `employeeNumber` does not appear:** verify the source record schema and the actual search result, then refresh/re-extract source schema. Do not fabricate attributes in the ORX merely to satisfy the exercise.
 
@@ -226,11 +223,14 @@ The **ORX** describes the source objects and attributes that Context Builder wil
 2. Choose **New View** (or **Create View**) and name it `LAB_HDAP_RAW.dvx`.
 3. Add the source extraction `LAB_HDAP_SOURCE.orx` to the view. In builds that display source categories as nodes, select the category containing the three users.
 4. Configure the source extraction as the view's user-entry source. This lab does **not** require joins or computed attributes.
-5. Map the source object class and attributes to the output. Preserve `uid`, `cn`, `sn`, `givenName`, `mail`, and `employeeNumber` without transformation.
-6. Configure the entry naming/RDN rule to use `uid=<source uid>`. Ensure it is **not** using `cn` or an auto-generated value.
-7. Configure the view's published base/target mapping to `ou=raw,o=pcache-lab`, with source records drawn from `ou=people,o=lab-source`.
-8. Use **Preview / Test View** if your editor offers it. Inspect the resulting entry DNs and attribute values.
-9. **Save** the DVX file.
+5. On the left hand slide of the screen click on the node "lab_hdap_raw".  The "Node Properties" menu should open up on the right hand side of the screen.
+6. In Node Properties -> Properties, click the buton for "New Content".
+7. In the "Select Path" dialog box, choose "inetorgperson". Click "OK".
+8. Map the source object class and attributes to the output. Preserve `uid`, `cn`, `sn`, `givenName`, `mail`, and `employeeNumber` without transformation. You do this by clicking on the "uid" uid content under the "lab_hdap_raw". On the right hand side of the screen, click Node Properties -> Attributes and select these attributes one by one, by highlighting them and then clicking the "->" button. 
+9. By default the entry naming/RDN rule should be configured to use `uid=<source uid>`. Click Node Properties -> RDN Settings and ensure it is **not** using `cn` or an auto-generated value.
+10. Configure the view's published base/target mapping to `ou=raw,o=pcache-lab`, with source records drawn from `ou=people,o=lab-source`.
+11. Use **Preview / Test View** if your editor offers it. Inspect the resulting entry DNs and attribute values.
+12. **Save** the DVX file.
 
 **Required DN transformation:**
 
