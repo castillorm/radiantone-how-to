@@ -308,10 +308,8 @@ Do not interpret a delayed result as proof of a persistent cache: source connect
 ### 3C. Inspect and select the refresh mechanism
 
 1. Select the configured persistent-cache branch.
-2. Open **Refresh Settings** (or the equivalent cache refresh configuration panel).
-3. Identify the available refresh mechanisms and record which one is actually selected.
-4. For a compatible HDAP source, check whether **HDAP Trigger** real-time refresh is supported and configured. **Do not assume** it is automatically active just because the source uses HDAP.
-5. If the environment instead uses periodic refresh, record the interval and confirm which periodic job will maintain the cache.
+2. Click on the **Refresh Settings** tab.
+3. Click "Real-time".
 6. Save and reopen the settings to confirm persistence.
 7. Locate the refresh pipeline, job, or processor status screen associated with the configured mechanism.
 
@@ -321,7 +319,7 @@ Do not interpret a delayed result as proof of a persistent cache: source connect
 
 1. Confirm you are administering the leader node.
 2. Open the cached branch's **Refresh Settings**.
-3. Click **Initialize** if this action is offered in your 7.4 patch.
+3. Click **Initialize**.
 4. Select the option to generate a new source LDIF/image from the backend view, rather than importing an unrelated customer file.
 5. Confirm the intended source DN and cache root.
 6. Start initialization.
